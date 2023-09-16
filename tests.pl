@@ -6,7 +6,7 @@
 
 :- use_module(functor_spec).
 
-test("usage as functor/3",(
+test("functor_spec: usage as functor/3",(
     functor_spec(A, a, 1),
     phrase(portray_clause_(A), "a(A).\n"),
 
@@ -16,12 +16,12 @@ test("usage as functor/3",(
     functor_spec(asdf(2,3,4), asdf, 3)
 )).
 
-test("general query",(
+test("functor_spec: general query",(
     functor_spec(A, B, C),
     phrase(portray_clause_([A, B, C]), "[A,B,C].\n")
 )).
 
-test("specify one of the properties",(
+test("functor_spec: specify one of the properties",(
     functor_spec(A, a, _),
     phrase(portray_clause_(A), "A.\n"),
 
@@ -29,22 +29,19 @@ test("specify one of the properties",(
     phrase(portray_clause_(B), "A.\n")
 )).
 
-test("complete information later",(
+test("functor_spec: complete information later",(
     functor_spec(A, a, _),
     phrase(portray_clause_(A), "A.\n"),
     functor_spec(A, _, 2),
     phrase(portray_clause_(A), "a(A,B).\n")
 )).
 
-test("conflicting information later",(
+test("functor_spec: conflicting information later",(
     functor_spec(A, a, _),
-    (   functor_spec(A, b, _) ->
-        false
-    ;   true
-    )
+    \+ functor_spec(A, b, _)
 )).
 
-test("unification with complementary specs",(
+test("functor_spec: unification with complementary specs",(
     functor_spec(A, a, _),
     functor_spec(B, _, 1),
     A = B,
@@ -52,15 +49,11 @@ test("unification with complementary specs",(
     phrase(portray_clause_(B), "a(A).\n")
 )).
 
-test("unification with conflicting specs",(
+test("functor_spec: unification with conflicting specs",(
     functor_spec(A, a, _),
     functor_spec(B, b, _),
-    (   A = B ->
-        false
-    ;   true
-    )
+    \+ A = B
 )).
-
 
 main :-
     findall(test(Name, Goal), test(Name, Goal), Tests),
