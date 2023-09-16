@@ -1,4 +1,6 @@
-/**/
+/*
+  SPDX-License-Identifier: Unlicense
+*/
 
 :- module(functor_spec, [
     functor_spec/3
