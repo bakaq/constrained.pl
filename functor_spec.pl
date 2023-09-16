@@ -27,8 +27,8 @@ functor_spec(Var, Functor, Arity) :-
 verify_attributes(Var, Value, Goals) :-
     (   get_atts(Var, +functor_spec(Functor, Arity)) ->
         (   var(Value) ->
-            (   get_atts(Value, +functor_spec(Functor, Arity)) ->
-                true
+            (   get_atts(Value, +functor_spec(Functor0, Arity0)) ->
+                (Functor0 = Functor, Arity0 = Arity)
             ;   put_atts(Value, +functor_spec(Functor, Arity))
             )
         ;   functor(Value, Functor, Arity)

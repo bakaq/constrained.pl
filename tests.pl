@@ -44,6 +44,24 @@ test("conflicting information later",(
     )
 )).
 
+test("unification with complementary specs",(
+    functor_spec(A, a, _),
+    functor_spec(B, _, 1),
+    A = B,
+    phrase(portray_clause_(A), "a(A).\n"),
+    phrase(portray_clause_(B), "a(A).\n")
+)).
+
+test("unification with conflicting specs",(
+    functor_spec(A, a, _),
+    functor_spec(B, b, _),
+    (   A = B ->
+        false
+    ;   true
+    )
+)).
+
+
 main :-
     findall(test(Name, Goal), test(Name, Goal), Tests),
     run_tests(Tests, Failed),
