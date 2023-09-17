@@ -92,7 +92,6 @@ functor_spec_t(Var, Functor, Arity, Args, T) :-
 
 functor_match_t(F1, F2, T) :-
     functor_spec(F1, Functor1, Arity1, Args1),
-    portray_clause(Arity1),
     functor_spec(F2, Functor2, Arity2, Args2),
     if_(
         (Functor1 = Functor2, Arity1 = Arity2),
