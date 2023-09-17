@@ -182,3 +182,8 @@ run_tests([test(Name, Goal)|Tests], Failed) :-
     ),
     run_tests(Tests, Failed1).
 
+assert_p(A, B) :-
+    phrase(portray_clause_(A), Portrayed),
+    phrase((B, ".\n"), Portrayed).
+
+
