@@ -79,6 +79,11 @@ test("functor_spec/4: arity and args consistency",(
     phrase(portray_clause_(Barity), "2.\n")
 )).
 
+test("functor_spec/4: instantiate arity",(
+    functor_spec(a(1,2,3), _, A, _),
+    phrase(portray_clause_(A), "3.\n")
+)).
+
 test("functor_spec/4: complete information later",(
     functor_spec(A, a, _, _),
     phrase(portray_clause_(A), "A.\n"),

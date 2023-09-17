@@ -9,13 +9,15 @@
     (#=..)/2,
     functor_spec_t/4,
     functor_spec_t/5,
-    (#=..)/3
+    (#=..)/3,
+    functor_match_t/3
 ]).
 
 :- use_module(library(atts)).
 :- use_module(library(lists)).
 :- use_module(library(reif)).
 :- use_module(library(debug)).
+:- use_module(library(format)).
 
 :- attribute functor_spec/3.
 
@@ -50,7 +52,9 @@ functor_spec(Var, Functor, Arity, Args) :-
     (
         (   var(Var), nonvar(Functor), nonvar(Args)
         ;   nonvar(Var)
-        ) -> Var =.. [Functor|Args]
+        ) ->
+        Var =.. [Functor|Args],
+        length(Args, Arity)
     ;   (   get_atts(Var, +functor_spec(Functor0, Arity0, Args0)) ->
             Functor0 = Functor,
             Arity0 = Arity,
@@ -85,6 +89,18 @@ functor_spec_t(Var, Functor, Arity, Args, T) :-
 (#=..)(Term, FunctorArgs, T) :-
     Term #=.. FunctorArgs0,
     =(FunctorArgs0, FunctorArgs, T).
+
+functor_match_t(F1, F2, T) :-
+    functor_spec(F1, Functor1, Arity1, Args1),
+    portray_clause(Arity1),
+    functor_spec(F2, Functor2, Arity2, Args2),
+    if_(
+        (Functor1 = Functor2, Arity1 = Arity2),
+        (T = true, Args1 = Args2),
+        (
+            T = false
+        )
+    ).
 
 verify_attributes(Var, Value, Goals) :-
     (   get_atts(Var, +functor_spec(Functor, Arity, Args)) ->
