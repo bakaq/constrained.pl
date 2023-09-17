@@ -8,32 +8,32 @@
 
 test("functor_spec/3: usage as functor/3",(
     functor_spec(A, a, 1),
-    phrase(portray_clause_(A), "a(A).\n"),
+    assert_p(A, "a(A)"),
 
     functor_spec(a(_,_), Functor, Arity),
-    phrase(portray_clause_([Functor, Arity]), "[a,2].\n"),
+    assert_p([Functor, Arity], "[a,2]"),
 
     functor_spec(asdf(2,3,4), asdf, 3)
 )).
 
 test("functor_spec/3: general query",(
     functor_spec(A, B, C),
-    phrase(portray_clause_([A, B, C]), "[A,B,C].\n")
+    assert_p([A, B, C], "[A,B,C]")
 )).
 
 test("functor_spec/3: specify one of the properties",(
     functor_spec(A, a, _),
-    phrase(portray_clause_(A), "A.\n"),
+    assert_p(A, "A"),
 
     functor_spec(B, _, 2),
-    phrase(portray_clause_(B), "A.\n")
+    assert_p(B, "A")
 )).
 
 test("functor_spec/3: complete information later",(
     functor_spec(A, a, _),
-    phrase(portray_clause_(A), "A.\n"),
+    assert_p(A, "A"),
     functor_spec(A, _, 2),
-    phrase(portray_clause_(A), "a(A,B).\n")
+    assert_p(A, "a(A,B)")
 )).
 
 test("functor_spec/3: conflicting information later",(
@@ -45,8 +45,8 @@ test("functor_spec/3: unification with complementary specs",(
     functor_spec(A, a, _),
     functor_spec(B, _, 1),
     A = B,
-    phrase(portray_clause_(A), "a(A).\n"),
-    phrase(portray_clause_(B), "a(A).\n")
+    assert_p(A, "a(A)"),
+    assert_p(B, "a(A)")
 )).
 
 test("functor_spec/3: unification with conflicting specs",(
@@ -57,43 +57,43 @@ test("functor_spec/3: unification with conflicting specs",(
 
 test("functor_spec/4: general query",(
     functor_spec(A, B, C, D),
-    phrase(portray_clause_([A, B, C, D]), "[A,B,C,D].\n")
+    assert_p([A, B, C, D], "[A,B,C,D]")
 )).
 
 test("functor_spec/4: specify one of the properties",(
     functor_spec(A, a, _, _),
-    phrase(portray_clause_(A), "A.\n"),
+    assert_p(A, "A"),
 
     functor_spec(B, _, 2, _),
-    phrase(portray_clause_(B), "A.\n"),
+    assert_p(B, "A"),
 
     functor_spec(C, _, _, [2,1]),
-    phrase(portray_clause_(C), "A.\n")
+    assert_p(C, "A")
 )).
 
 test("functor_spec/4: arity and args consistency",(
     functor_spec(_, _, 2, Aargs),
-    phrase(portray_clause_(Aargs), "[A,B].\n"),
+    assert_p(Aargs, "[A,B]"),
 
     functor_spec(_, _, Barity, [1,2]),
-    phrase(portray_clause_(Barity), "2.\n")
+    assert_p(Barity, "2")
 )).
 
 test("functor_spec/4: instantiate arity",(
     functor_spec(a(1,2,3), _, A, _),
-    phrase(portray_clause_(A), "3.\n")
+    assert_p(A, "3")
 )).
 
 test("functor_spec/4: complete information later",(
     functor_spec(A, a, _, _),
-    phrase(portray_clause_(A), "A.\n"),
+    assert_p(A, "A"),
     functor_spec(A, _, 2, _),
-    phrase(portray_clause_(A), "a(A,B).\n"),
+    assert_p(A, "a(A,B)"),
 
     functor_spec(B, a, _, _),
-    phrase(portray_clause_(B), "A.\n"),
+    assert_p(B, "A"),
     functor_spec(B, _, _, [1,2]),
-    phrase(portray_clause_(B), "a(1,2).\n")
+    assert_p(B, "a(1,2)")
 )).
 
 test("functor_spec/4: conflicting information later",(
@@ -117,14 +117,14 @@ test("functor_spec/4: unification with complementary specs",(
     functor_spec(A, a, _, _),
     functor_spec(B, _, 1, _),
     A = B,
-    phrase(portray_clause_(A), "a(A).\n"),
-    phrase(portray_clause_(B), "a(A).\n"),
+    assert_p(A, "a(A)"),
+    assert_p(B, "a(A)"),
 
     functor_spec(C, a, _, _),
     functor_spec(D, _, _, [1,2]),
     C = D,
-    phrase(portray_clause_(C), "a(1,2).\n"),
-    phrase(portray_clause_(D), "a(1,2).\n")
+    assert_p(C, "a(1,2)"),
+    assert_p(D, "a(1,2)")
 )).
 
 test("functor_spec/4: unification with conflicting specs",(
@@ -147,10 +147,10 @@ test("functor_spec/4: unification with conflicting specs",(
 
 test("(#=..)/2: use as (=..)/2",(
     A #=.. [a, 1, 2],
-    phrase(portray_clause_(A), "a(1,2).\n"),
+    assert_p(A, "a(1,2)"),
 
     a(1,2) #=.. [F|Args],
-    phrase(portray_clause_([F, Args]), "[a,[1,2]].\n"),
+    assert_p([F, Args], "[a,[1,2]]"),
 
     a(1,2) #=.. [a, 1, 2]
 )).
