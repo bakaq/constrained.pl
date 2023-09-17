@@ -6,11 +6,15 @@
     op(700, xfx, (#=..)),
     functor_spec/3,
     functor_spec/4,
-    (#=..)/2
+    (#=..)/2,
+    functor_spec_t/4,
+    functor_spec_t/5,
+    (#=..)/3
 ]).
 
 :- use_module(library(atts)).
 :- use_module(library(lists)).
+:- use_module(library(reif)).
 :- use_module(library(debug)).
 
 :- attribute functor_spec/3.
@@ -61,6 +65,26 @@ functor_spec(Var, Functor, Arity, Args) :-
 
 (#=..)(Term, [Functor|Args]) :-
         functor_spec(Term, Functor, _, Args).
+
+functor_spec_t(Var, Functor, Arity, T) :-
+    functor_spec(Var, Functor0, Arity0),
+    if_(
+        (Functor0 = Functor, Arity0 = Arity),
+        T = true,
+        T = false
+    ).
+
+functor_spec_t(Var, Functor, Arity, Args, T) :-
+    functor_spec(Var, Functor0, Arity0, Args0),
+    if_(
+        (Functor0 = Functor, Arity0 = Arity, Args0 = Args),
+        T = true,
+        T = false
+    ).
+
+(#=..)(Term, FunctorArgs, T) :-
+    Term #=.. FunctorArgs0,
+    =(FunctorArgs0, FunctorArgs, T).
 
 verify_attributes(Var, Value, Goals) :-
     (   get_atts(Var, +functor_spec(Functor, Arity, Args)) ->
