@@ -28,12 +28,7 @@ functor_spec(Var, Functor, Arity) :-
     functor_spec(Var, Functor, Arity, _).
 
 functor_spec(Var, Functor, Arity, Args) :-
-    (   (   nonvar(Arity)
-        ;   nonvar(Args)
-        ) ->
-        length(Args, Arity)
-    ;   true
-    ),
+    enforce_constraints(Var, Functor, Arity, Args),
     (
         (   var(Var), nonvar(Functor), nonvar(Args)
         ;   nonvar(Var)
@@ -58,6 +53,33 @@ functor_spec(Var, Functor, Arity, Args) :-
                 [Functor, Arity, Args]
             )
         )
+    ).
+
+enforce_constraints(Var, Functor, Arity, Args) :-
+    (   nonvar(Functor) ->
+        (   atom(Functor) ->
+            true
+        ;   Arity = 0
+        )
+    ;   true
+    ),
+    (   Functor == Arity ->
+        % Functor has to be a number then, and a number is not an atom,
+        % so it has to have arity 0
+        Functor = 0
+    ;   true
+    ),
+    (   Functor == Arity ->
+        Functor = 0
+    ;   true
+    ),
+    (   (nonvar(Arity); nonvar(Args)) ->
+        length(Args, Arity)
+    ;   true
+    ),
+    (   nonvar(Functor), nonvar(Arity) ->
+        functor(Var, Functor, Arity)
+    ;   true
     ).
 
 (#=..)(Term, [Functor|Args]) :-
@@ -111,15 +133,10 @@ verify_attributes(Var, Value, Goals) :-
         maplist(
             \V^G^(
                 G = (
+                    var(V) ->
                     functor_spec:get_atts(V, +functor_spec(Functor, Arity, Args)),
-                    (   var(Arity), nonvar(Args) ->
-                        length(Args, Arity)
-                    ;   true
-                    ),
-                    (   nonvar(Functor), nonvar(Arity) ->
-                        functor(V, Functor, Arity)
-                    ;   true
-                    )
+                    functor_spec:enforce_constraints(V, Functor, Arity, Args)
+                ;   true
                 )
             ),
             Vars,

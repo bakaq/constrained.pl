@@ -90,6 +90,20 @@ test("functor_spec/3: unification with conflicting specs",(
     \+ A = B
 )).
 
+test("functor_spec/3: non-atom functor",(
+    % https://github.com/bakaq/functor_spec/issues/1
+    functor_spec(A, A, A),
+    assert_p(A, "0"),
+
+    % https://github.com/bakaq/functor_spec/issues/2
+    functor_spec(B, C, D),
+    B = 1,
+    assert_p([B,C,D], "[1,1,0]"),
+
+    % https://github.com/bakaq/functor_spec/issues/3
+    functor_spec(E, 1, F),
+    assert_p([E,F], "[1,0]")
+)).
 
 test("functor_spec/4: general query",(
     functor_spec(A, B, C, D),
