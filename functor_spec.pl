@@ -25,33 +25,7 @@
 :- attribute functor_spec/3, functor_spec_constraint/1.
 
 functor_spec(Var, Functor, Arity) :-
-    (
-        (   var(Var), nonvar(Functor), nonvar(Arity)
-        ;   nonvar(Var)
-        )
-        -> functor(Var, Functor, Arity)
-    ;   (   get_atts(Var, +functor_spec(Functor0, Arity0, _)) ->
-            Functor0 = Functor,
-            Arity0 = Arity
-        ;   (   nonvar(Arity) ->
-                length(Args, Arity)
-            ;   true
-            ),
-            put_atts(Var, +functor_spec(Functor, Arity, Args)),
-            maplist(
-                Var+\V^(
-                    var(V) ->
-                    (   get_atts(V, +functor_spec_constraint(Vars0)) ->
-                        sort([Var|Vars0], Vars),
-                        put_atts(V, +functor_spec_constraint(Vars))
-                    ;   put_atts(V, +functor_spec_constraint([Var]))
-                    )
-                ;   true
-                ),
-                [Functor, Arity, Args]
-            )
-        )
-    ).
+    functor_spec(Var, Functor, Arity, _).
 
 functor_spec(Var, Functor, Arity, Args) :-
     (   (   nonvar(Arity)
