@@ -2,6 +2,8 @@
 
 :- use_module(library(format)).
 :- use_module(library(clpz)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
 :- use_module(library(debug)).
 
 :- use_module(functor_spec).
@@ -29,11 +31,44 @@ test("functor_spec/3: specify one of the properties",(
     assert_p(B, "A")
 )).
 
-test("functor_spec/3: complete information later",(
+test("functor_spec/3: complete information later with functor_spec/3",(
     functor_spec(A, a, _),
     assert_p(A, "A"),
+
     functor_spec(A, _, 2),
     assert_p(A, "a(A,B)")
+)).
+
+test("functor_spec/3: complete information later unifying constraint",(
+    functor_spec(A, a, B),
+    assert_p(A, "A"),
+    B = 1,
+    assert_p(A, "a(A)"),
+
+    functor_spec(C, D, 2),
+    assert_p(C, "A"),
+    D = a,
+    assert_p(C, "a(A,B)")
+)).
+
+test("functor_spec/3: sharing constraints",(
+    functor_spec(A, a, B),
+    functor_spec(C, b, B),
+    assert_p(A, "A"),
+    assert_p(C, "A"),
+
+    B = 1,
+    assert_p(A, "a(A)"),
+    assert_p(C, "b(A)"),
+
+    functor_spec(D, E, 1),
+    functor_spec(F, E, 2),
+    assert_p(D, "A"),
+    assert_p(F, "A"),
+
+    E = a,
+    assert_p(D, "a(A)"),
+    assert_p(F, "a(A,B)")
 )).
 
 test("functor_spec/3: conflicting information later",(
@@ -54,6 +89,7 @@ test("functor_spec/3: unification with conflicting specs",(
     functor_spec(B, b, _),
     \+ A = B
 )).
+
 
 test("functor_spec/4: general query",(
     functor_spec(A, B, C, D),
@@ -84,7 +120,7 @@ test("functor_spec/4: instantiate arity",(
     assert_p(A, "3")
 )).
 
-test("functor_spec/4: complete information later",(
+test("functor_spec/4: complete information later with functor_spec/4",(
     functor_spec(A, a, _, _),
     assert_p(A, "A"),
     functor_spec(A, _, 2, _),
@@ -96,21 +132,38 @@ test("functor_spec/4: complete information later",(
     assert_p(B, "a(1,2)")
 )).
 
+test("functor_spec/4: complete information later unifying constraint",(
+    functor_spec(A, a, B, _),
+    assert_p(A, "A"),
+    B = 1,
+    assert_p(A, "a(A)"),
+
+    functor_spec(C, D, 2, _),
+    assert_p(C, "A"),
+    D = a,
+    assert_p(C, "a(A,B)"),
+
+    functor_spec(E, a, _, F),
+    assert_p(E, "A"),
+    length(F, 2),
+    assert_p(E, "a(A,B)")
+)).
+
 test("functor_spec/4: conflicting information later",(
     functor_spec(A, a, _, _),
     \+ functor_spec(A, b, _, _),
 
-    functor_spec(A, _, 2, _),
-    \+ functor_spec(A, _, 3, _),
+    functor_spec(B, _, 2, _),
+    \+ functor_spec(B, _, 3, _),
 
-    functor_spec(A, _, 2, _),
-    \+ functor_spec(A, _, _, [1,2,3]),
+    functor_spec(C, _, 2, _),
+    \+ functor_spec(C, _, _, [1,2,3]),
 
-    functor_spec(A, _, _, [_,_]),
-    \+ functor_spec(A, _, _, [_,_,_]),
+    functor_spec(D, _, _, [_,_]),
+    \+ functor_spec(D, _, _, [_,_,_]),
 
-    functor_spec(A, _, _, [_,_]),
-    \+ functor_spec(A, _, 3, _)
+    functor_spec(E, _, _, [_,_]),
+    \+ functor_spec(E, _, 3, _)
 )).
 
 test("functor_spec/4: unification with complementary specs",(
