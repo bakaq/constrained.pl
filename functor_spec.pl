@@ -63,6 +63,10 @@ enforce_constraints(Var, Functor, Arity, Args) :-
         )
     ;   true
     ),
+    (   Var == Functor ->
+        Arity = 0
+    ;   true
+    ),
     (   Functor == Arity ->
         % Functor has to be a number then, and a number is not an atom,
         % so it has to have arity 0
