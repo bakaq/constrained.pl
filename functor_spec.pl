@@ -128,12 +128,15 @@ verify_attributes(Var, Value, Goals) :-
     ;   Goals = []
     ).
 
-attribute_goals(Var) -->
+attribute_goals(Var) --> 
     {(  get_atts(Var, +functor_spec(Functor, Arity, ArgSpec)) ->
-        Goals = [functor_spec:functor_spec(Var, Functor, Arity, ArgSpec)],
-        put_atts(Var, -functor_spec(_, _, _))
+        put_atts(Var, -functor_spec(_, _, _)),
+        Goals0 = [functor_spec:functor_spec(Var, Functor, Arity, ArgSpec)|Goals],
+        phrase(attribute_goals(Var), Goals)
     ;   get_atts(Var, +functor_spec_constraint(_)) ->
-        Goals = [],
-        put_atts(Var, -functor_spec_constraint(_))
-    ) },
-    Goals.
+        put_atts(Var, -functor_spec_constraint(_)),
+        Goals0 = Goals,
+        phrase(attribute_goals(Var), Goals)
+    ;   Goals0 = []
+    )},
+    Goals0.
