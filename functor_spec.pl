@@ -56,6 +56,9 @@ functor_spec(Var, Functor, Arity, Args) :-
     ).
 
 enforce_constraints(Var, Functor, Arity, Args) :-
+    catch(enforce_constraints_(Var, Functor, Arity, Args), _, false).
+
+enforce_constraints_(Var, Functor, Arity, Args) :-
     (   nonvar(Functor) ->
         (   atom(Functor) ->
             true

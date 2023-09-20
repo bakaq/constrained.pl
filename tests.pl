@@ -113,6 +113,21 @@ test("functor_spec/3: non-atom functor",(
     assert_p([I,J], "[0,0]")
 )).
 
+test("functor_spec/3: fail instead of emitting errors",(
+    % https://github.com/bakaq/functor_spec/issues/5
+    catch(
+        \+ (functor_spec(_, A, B), A = a, B = 1*1),
+        _,
+        false
+    ),
+
+    catch(
+        \+ (functor_spec(_, C, D), D = 1*1, C = a),
+        _,
+        false
+    )
+)).
+
 test("functor_spec/4: general query",(
     functor_spec(A, B, C, D),
     assert_p([A, B, C, D], "[A,B,C,D]")
