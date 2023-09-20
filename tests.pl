@@ -106,7 +106,11 @@ test("functor_spec/3: non-atom functor",(
 
     % https://github.com/mthom/scryer-prolog/discussions/2021#discussioncomment-7043362
     functor_spec(G, G, H),
-    assert_p([G,H], "[A,0]")
+    assert_p([G,H], "[A,0]"),
+
+    % https://github.com/bakaq/functor_spec/issues/4
+    functor_spec(I, J, I),
+    assert_p([I,J], "[0,0]")
 )).
 
 test("functor_spec/4: general query",(

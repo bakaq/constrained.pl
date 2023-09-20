@@ -63,7 +63,7 @@ enforce_constraints(Var, Functor, Arity, Args) :-
         )
     ;   true
     ),
-    (   Var == Functor ->
+    (   (Var == Functor; Var == Arity) ->
         Arity = 0
     ;   true
     ),
