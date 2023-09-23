@@ -56,7 +56,15 @@ functor_spec(Var, Functor, Arity, Args) :-
     ).
 
 enforce_constraints(Var, Functor, Arity, Args) :-
-    catch(enforce_constraints_(Var, Functor, Arity, Args), _, false).
+    catch(
+        catch(
+            enforce_constraints_(Var, Functor, Arity, Args),
+            error(type_error(_,_),_),
+            false
+        ),
+        error(domain_error(_,_),_),
+        false
+    ).
 
 enforce_constraints_(Var, Functor, Arity, Args) :-
     (   nonvar(Functor) ->
