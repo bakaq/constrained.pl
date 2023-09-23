@@ -89,7 +89,7 @@ enforce_constraints_(Var, Functor, Arity, Args) :-
     ;   true
     ).
 
-(#=..)(Term, [Functor|Args]) :-
+#=..(Term, [Functor|Args]) :-
         functor_spec(Term, Functor, _, Args).
 
 functor_spec_t(Var, Functor, Arity, T) :-
@@ -108,7 +108,7 @@ functor_spec_t(Var, Functor, Arity, Args, T) :-
         T = false
     ).
 
-(#=..)(Term, FunctorArgs, T) :-
+#=..(Term, FunctorArgs, T) :-
     Term #=.. FunctorArgs0,
     =(FunctorArgs0, FunctorArgs, T).
 
