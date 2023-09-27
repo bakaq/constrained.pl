@@ -2,14 +2,14 @@
   SPDX-License-Identifier: Unlicense
 */
 
-:- module(functor_spec, [
+:- module(constrained, [
     op(700, xfx, (#=..)),
-    functor_spec/3,
-    functor_spec/4,
+    functor_c/3,
+    functor_c/4,
     (#=..)/2,
     length_c/2,
-    functor_spec_t/4,
-    functor_spec_t/5,
+    functor_c_t/4,
+    functor_c_t/5,
     (#=..)/3,
     functor_match_t/3
 ]).
@@ -25,10 +25,10 @@
 
 :- attribute functor_spec/3, functor_spec_constraint/1, length_of/1, lengths/1.
 
-functor_spec(Var, Functor, Arity) :-
-    functor_spec(Var, Functor, Arity, _).
+functor_c(Var, Functor, Arity) :-
+    functor_c(Var, Functor, Arity, _).
 
-functor_spec(Var, Functor, Arity, Args) :-
+functor_c(Var, Functor, Arity, Args) :-
     enforce_functor_constraints(Var, Functor, Arity, Args),
     (
         (   var(Var), nonvar(Functor), nonvar(Args)
@@ -36,18 +36,18 @@ functor_spec(Var, Functor, Arity, Args) :-
         ) ->
         Var =.. [Functor|Args],
         length(Args, Arity)
-    ;   (   get_atts(Var, +functor_spec(Functor0, Arity0, Args0)) ->
+    ;   (   get_atts(Var, functor_spec(Functor0, Arity0, Args0)) ->
             Functor0 = Functor,
             Arity0 = Arity,
             Args0 = Args
-        ;   put_atts(Var, +functor_spec(Functor, Arity, Args)),
+        ;   put_atts(Var, functor_spec(Functor, Arity, Args)),
             maplist(
                 Var+\V^(
                     var(V) ->
-                    (   get_atts(V, +functor_spec_constraint(Vars0)) ->
+                    (   get_atts(V, functor_spec_constraint(Vars0)) ->
                         sort([Var|Vars0], Vars),
-                        put_atts(V, +functor_spec_constraint(Vars))
-                    ;   put_atts(V, +functor_spec_constraint([Var]))
+                        put_atts(V, functor_spec_constraint(Vars))
+                    ;   put_atts(V, functor_spec_constraint([Var]))
                     )
                 ;   true
                 ),
@@ -127,18 +127,18 @@ list_lengths(L, Lens) :-
     maplist(L+\Len^(length(L, Len)), Lens).
 
 #=..(Term, [Functor|Args]) :-
-        functor_spec(Term, Functor, _, Args).
+        functor_c(Term, Functor, _, Args).
 
-functor_spec_t(Var, Functor, Arity, T) :-
-    functor_spec(Var, Functor0, Arity0),
+functor_c_t(Var, Functor, Arity, T) :-
+    functor_c(Var, Functor0, Arity0),
     if_(
         (Functor0 = Functor, Arity0 = Arity),
         T = true,
         T = false
     ).
 
-functor_spec_t(Var, Functor, Arity, Args, T) :-
-    functor_spec(Var, Functor0, Arity0, Args0),
+functor_c_t(Var, Functor, Arity, Args, T) :-
+    functor_c(Var, Functor0, Arity0, Args0),
     if_(
         (Functor0 = Functor, Arity0 = Arity, Args0 = Args),
         T = true,
@@ -150,8 +150,8 @@ functor_spec_t(Var, Functor, Arity, Args, T) :-
     =(FunctorArgs0, FunctorArgs, T).
 
 functor_match_t(F1, F2, T) :-
-    functor_spec(F1, Functor1, Arity1, Args1),
-    functor_spec(F2, Functor2, Arity2, Args2),
+    functor_c(F1, Functor1, Arity1, Args1),
+    functor_c(F2, Functor2, Arity2, Args2),
     if_(
         (Functor1 = Functor2, Arity1 = Arity2),
         (T = true, Args1 = Args2),
@@ -163,23 +163,23 @@ functor_match_t(F1, F2, T) :-
 verify_attributes(Var, Value, Goals) :-
     (   get_atts(Var, functor_spec(Functor, Arity, Args)) ->
         (   var(Value) ->
-            (   get_atts(Value, +functor_spec(Functor0, Arity0, Args0)) ->
+            (   get_atts(Value, functor_spec(Functor0, Arity0, Args0)) ->
                 Functor0 = Functor,
                 Arity0 = Arity,
                 Args0 = Args
-            ;   put_atts(Value, +functor_spec(Functor, Arity, Args))
+            ;   put_atts(Value, functor_spec(Functor, Arity, Args))
             )
         ;   Value =.. [Functor|Args],
             length(Args, Arity)
         ),
         Goals = []
-    ;   get_atts(Var, +functor_spec_constraint(Vars)) ->
+    ;   get_atts(Var, functor_spec_constraint(Vars)) ->
         maplist(
             \V^G^(
                 G = (
                     var(V) ->
-                    functor_spec:get_atts(V, functor_spec(Functor, Arity, Args)),
-                    functor_spec:enforce_functor_constraints(V, Functor, Arity, Args)
+                    constrained:get_atts(V, functor_spec(Functor, Arity, Args)),
+                    constrained:enforce_functor_constraints(V, Functor, Arity, Args)
                 ;   true
                 )
             ),
@@ -201,13 +201,13 @@ verify_attributes(Var, Value, Goals) :-
 
 length_c_attribute_goals([], _) --> [].
 length_c_attribute_goals([Len|Lens], Var) -->
-    [functor_spec:length_c(Var, Len)],
+    [constrained:length_c(Var, Len)],
     length_c_attribute_goals(Lens, Var).
 
 attribute_goals(Var) --> 
     (   { get_atts(Var, functor_spec(Functor, Arity, ArgSpec)) } ->
         { put_atts(Var, -functor_spec(_, _, _)) },
-        [functor_spec:functor_spec(Var, Functor, Arity, ArgSpec)],
+        [constrained:functor_spec(Var, Functor, Arity, ArgSpec)],
         attribute_goals(Var)
     ;   { get_atts(Var, functor_spec_constraint(_)) } ->
         { put_atts(Var, -functor_spec_constraint(_)) },

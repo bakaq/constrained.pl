@@ -6,54 +6,54 @@
 :- use_module(library(lists)).
 :- use_module(library(debug)).
 
-:- use_module(functor_spec).
+:- use_module(constrained).
 
-test("functor_spec/3: usage as functor/3",(
-    functor_spec(A, a, 1),
+test("functor_c/3: usage as functor/3",(
+    functor_c(A, a, 1),
     assert_p(A, "a(A)"),
 
-    functor_spec(a(_,_), Functor, Arity),
+    functor_c(a(_,_), Functor, Arity),
     assert_p([Functor, Arity], "[a,2]"),
 
-    functor_spec(asdf(2,3,4), asdf, 3)
+    functor_c(asdf(2,3,4), asdf, 3)
 )).
 
-test("functor_spec/3: general query",(
-    functor_spec(A, B, C),
+test("functor_c/3: general query",(
+    functor_c(A, B, C),
     assert_p([A, B, C], "[A,B,C]")
 )).
 
-test("functor_spec/3: specify one of the properties",(
-    functor_spec(A, a, _),
+test("functor_c/3: specify one of the properties",(
+    functor_c(A, a, _),
     assert_p(A, "A"),
 
-    functor_spec(B, _, 2),
+    functor_c(B, _, 2),
     assert_p(B, "A")
 )).
 
-test("functor_spec/3: complete information later with functor_spec/3",(
-    functor_spec(A, a, _),
+test("functor_c/3: complete information later with functor_c/3",(
+    functor_c(A, a, _),
     assert_p(A, "A"),
 
-    functor_spec(A, _, 2),
+    functor_c(A, _, 2),
     assert_p(A, "a(A,B)")
 )).
 
-test("functor_spec/3: complete information later unifying constraint",(
-    functor_spec(A, a, B),
+test("functor_c/3: complete information later unifying constraint",(
+    functor_c(A, a, B),
     assert_p(A, "A"),
     B = 1,
     assert_p(A, "a(A)"),
 
-    functor_spec(C, D, 2),
+    functor_c(C, D, 2),
     assert_p(C, "A"),
     D = a,
     assert_p(C, "a(A,B)")
 )).
 
-test("functor_spec/3: sharing constraints",(
-    functor_spec(A, a, B),
-    functor_spec(C, b, B),
+test("functor_c/3: sharing constraints",(
+    functor_c(A, a, B),
+    functor_c(C, b, B),
     assert_p(A, "A"),
     assert_p(C, "A"),
 
@@ -61,8 +61,8 @@ test("functor_spec/3: sharing constraints",(
     assert_p(A, "a(A)"),
     assert_p(C, "b(A)"),
 
-    functor_spec(D, E, 1),
-    functor_spec(F, E, 2),
+    functor_c(D, E, 1),
+    functor_c(F, E, 2),
     assert_p(D, "A"),
     assert_p(F, "A"),
 
@@ -71,167 +71,167 @@ test("functor_spec/3: sharing constraints",(
     assert_p(F, "a(A,B)")
 )).
 
-test("functor_spec/3: conflicting information later",(
-    functor_spec(A, a, _),
-    \+ functor_spec(A, b, _)
+test("functor_c/3: conflicting information later",(
+    functor_c(A, a, _),
+    \+ functor_c(A, b, _)
 )).
 
-test("functor_spec/3: unification with complementary specs",(
-    functor_spec(A, a, _),
-    functor_spec(B, _, 1),
+test("functor_c/3: unification with complementary specs",(
+    functor_c(A, a, _),
+    functor_c(B, _, 1),
     A = B,
     assert_p(A, "a(A)"),
     assert_p(B, "a(A)")
 )).
 
-test("functor_spec/3: unification with conflicting specs",(
-    functor_spec(A, a, _),
-    functor_spec(B, b, _),
+test("functor_c/3: unification with conflicting specs",(
+    functor_c(A, a, _),
+    functor_c(B, b, _),
     \+ A = B
 )).
 
-test("functor_spec/3: non-atom functor",(
-    % https://github.com/bakaq/functor_spec/issues/1
-    functor_spec(A, A, A),
+test("functor_c/3: non-atom functor",(
+    % https://github.com/bakaq/functor_c/issues/1
+    functor_c(A, A, A),
     assert_p(A, "0"),
 
-    % https://github.com/bakaq/functor_spec/issues/2
-    functor_spec(B, C, D),
+    % https://github.com/bakaq/functor_c/issues/2
+    functor_c(B, C, D),
     B = 1,
     assert_p([B,C,D], "[1,1,0]"),
 
-    % https://github.com/bakaq/functor_spec/issues/3
-    functor_spec(E, 1, F),
+    % https://github.com/bakaq/functor_c/issues/3
+    functor_c(E, 1, F),
     assert_p([E,F], "[1,0]"),
 
     % https://github.com/mthom/scryer-prolog/discussions/2021#discussioncomment-7043362
-    functor_spec(G, G, H),
+    functor_c(G, G, H),
     assert_p([G,H], "[A,0]"),
 
-    % https://github.com/bakaq/functor_spec/issues/4
-    functor_spec(I, J, I),
+    % https://github.com/bakaq/functor_c/issues/4
+    functor_c(I, J, I),
     assert_p([I,J], "[0,0]")
 )).
 
-test("functor_spec/3: fail instead of emitting errors",(
-    % https://github.com/bakaq/functor_spec/issues/5
+test("functor_c/3: fail instead of emitting errors",(
+    % https://github.com/bakaq/functor_c/issues/5
     catch(
-        \+ (functor_spec(_, A, B), A = a, B = 1*1),
+        \+ (functor_c(_, A, B), A = a, B = 1*1),
         _,
         false
     ),
 
     catch(
-        \+ (functor_spec(_, C, D), D = 1*1, C = a),
+        \+ (functor_c(_, C, D), D = 1*1, C = a),
         _,
         false
     )
 )).
 
-test("functor_spec/4: general query",(
-    functor_spec(A, B, C, D),
+test("functor_c/4: general query",(
+    functor_c(A, B, C, D),
     assert_p([A, B, C, D], "[A,B,C,D]")
 )).
 
-test("functor_spec/4: specify one of the properties",(
-    functor_spec(A, a, _, _),
+test("functor_c/4: specify one of the properties",(
+    functor_c(A, a, _, _),
     assert_p(A, "A"),
 
-    functor_spec(B, _, 2, _),
+    functor_c(B, _, 2, _),
     assert_p(B, "A"),
 
-    functor_spec(C, _, _, [2,1]),
+    functor_c(C, _, _, [2,1]),
     assert_p(C, "A")
 )).
 
-test("functor_spec/4: arity and args consistency",(
-    functor_spec(_, _, 2, Aargs),
+test("functor_c/4: arity and args consistency",(
+    functor_c(_, _, 2, Aargs),
     assert_p(Aargs, "[A,B]"),
 
-    functor_spec(_, _, Barity, [1,2]),
+    functor_c(_, _, Barity, [1,2]),
     assert_p(Barity, "2")
 )).
 
-test("functor_spec/4: instantiate arity",(
-    functor_spec(a(1,2,3), _, A, _),
+test("functor_c/4: instantiate arity",(
+    functor_c(a(1,2,3), _, A, _),
     assert_p(A, "3")
 )).
 
-test("functor_spec/4: complete information later with functor_spec/4",(
-    functor_spec(A, a, _, _),
+test("functor_c/4: complete information later with functor_c/4",(
+    functor_c(A, a, _, _),
     assert_p(A, "A"),
-    functor_spec(A, _, 2, _),
+    functor_c(A, _, 2, _),
     assert_p(A, "a(A,B)"),
 
-    functor_spec(B, a, _, _),
+    functor_c(B, a, _, _),
     assert_p(B, "A"),
-    functor_spec(B, _, _, [1,2]),
+    functor_c(B, _, _, [1,2]),
     assert_p(B, "a(1,2)")
 )).
 
-test("functor_spec/4: complete information later unifying constraint",(
-    functor_spec(A, a, B, _),
+test("functor_c/4: complete information later unifying constraint",(
+    functor_c(A, a, B, _),
     assert_p(A, "A"),
     B = 1,
     assert_p(A, "a(A)"),
 
-    functor_spec(C, D, 2, _),
+    functor_c(C, D, 2, _),
     assert_p(C, "A"),
     D = a,
     assert_p(C, "a(A,B)"),
 
-    functor_spec(E, a, _, F),
+    functor_c(E, a, _, F),
     assert_p(E, "A"),
     length(F, 2),
     assert_p(E, "a(A,B)")
 )).
 
-test("functor_spec/4: conflicting information later",(
-    functor_spec(A, a, _, _),
-    \+ functor_spec(A, b, _, _),
+test("functor_c/4: conflicting information later",(
+    functor_c(A, a, _, _),
+    \+ functor_c(A, b, _, _),
 
-    functor_spec(B, _, 2, _),
-    \+ functor_spec(B, _, 3, _),
+    functor_c(B, _, 2, _),
+    \+ functor_c(B, _, 3, _),
 
-    functor_spec(C, _, 2, _),
-    \+ functor_spec(C, _, _, [1,2,3]),
+    functor_c(C, _, 2, _),
+    \+ functor_c(C, _, _, [1,2,3]),
 
-    functor_spec(D, _, _, [_,_]),
-    \+ functor_spec(D, _, _, [_,_,_]),
+    functor_c(D, _, _, [_,_]),
+    \+ functor_c(D, _, _, [_,_,_]),
 
-    functor_spec(E, _, _, [_,_]),
-    \+ functor_spec(E, _, 3, _)
+    functor_c(E, _, _, [_,_]),
+    \+ functor_c(E, _, 3, _)
 )).
 
-test("functor_spec/4: unification with complementary specs",(
-    functor_spec(A, a, _, _),
-    functor_spec(B, _, 1, _),
+test("functor_c/4: unification with complementary specs",(
+    functor_c(A, a, _, _),
+    functor_c(B, _, 1, _),
     A = B,
     assert_p(A, "a(A)"),
     assert_p(B, "a(A)"),
 
-    functor_spec(C, a, _, _),
-    functor_spec(D, _, _, [1,2]),
+    functor_c(C, a, _, _),
+    functor_c(D, _, _, [1,2]),
     C = D,
     assert_p(C, "a(1,2)"),
     assert_p(D, "a(1,2)")
 )).
 
-test("functor_spec/4: unification with conflicting specs",(
-    functor_spec(A, a, _, _),
-    functor_spec(B, b, _, _),
+test("functor_c/4: unification with conflicting specs",(
+    functor_c(A, a, _, _),
+    functor_c(B, b, _, _),
     \+ A = B,
 
-    functor_spec(C, _, 2, _),
-    functor_spec(D, _, 3, _),
+    functor_c(C, _, 2, _),
+    functor_c(D, _, 3, _),
     \+ C = D,
 
-    functor_spec(E, _, 2, _),
-    functor_spec(F, _, _, [_,_,_]),
+    functor_c(E, _, 2, _),
+    functor_c(F, _, _, [_,_,_]),
     \+ E = F,
 
-    functor_spec(G, _, _, [_,_]),
-    functor_spec(H, _, 3, _),
+    functor_c(G, _, _, [_,_]),
+    functor_c(H, _, 3, _),
     \+ G = H
 )).
 
