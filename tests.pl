@@ -245,6 +245,70 @@ test("(#=..)/2: use as (=..)/2",(
     a(1,2) #=.. [a, 1, 2]
 )).
 
+test("length_c/2: basic functionality",(
+    length_c(Ls0, Len0),
+    assert_p(Ls0, "A"),
+    assert_p(Len0, "A"),
+    Ls0 = [1,2,3],
+    Len0 == 3,
+
+    length_c(Ls1, Len1),
+    assert_p(Ls1, "A"),
+    assert_p(Len1, "A"),
+    Len1 = 3,
+    assert_p(Ls1, "[A,B,C]")
+)).
+
+test("length_c/2: multiple lenghts on same list, unify list",(
+    length_c(Ls, Len0),
+    length_c(Ls, Len1),
+    assert_p(Ls, "A"),
+    assert_p(Len0, "A"),
+    assert_p(Len1, "A"),
+    Ls = [1,2,3],
+    Len0 == 3,
+    Len1 == 3
+)).
+
+test("length_c/2: multiple lenghts on same list, unify length",(
+    length_c(Ls, Len0),
+    length_c(Ls, Len1),
+
+    assert_p(Ls, "A"),
+    assert_p(Len0, "A"),
+    assert_p(Len1, "A"),
+
+    Len0 = 3,
+    Len1 == 3,
+    assert_p(Ls, "[A,B,C]")
+)).
+
+test("length_c/2: multiple lists with same length, unify length",(
+    length_c(Ls0, Len),
+    length_c(Ls1, Len),
+
+    assert_p(Ls0, "A"),
+    assert_p(Ls1, "A"),
+    assert_p(Len, "A"),
+
+    Len = 3,
+    assert_p(Ls0, "[A,B,C]"),
+    assert_p(Ls1, "[A,B,C]")
+)).
+
+test("length_c/2: multiple lists with same length, unify list",(
+    length_c(Ls0, Len),
+    length_c(Ls1, Len),
+
+    assert_p(Ls0, "A"),
+    assert_p(Ls1, "A"),
+    assert_p(Len, "A"),
+
+    Ls0 = [1,2,3],
+    Len == 3,
+    assert_p(Ls1, "[A,B,C]")
+)).
+
 main :-
     findall(test(Name, Goal), test(Name, Goal), Tests),
     run_tests(Tests, Failed),

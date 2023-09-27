@@ -7,6 +7,7 @@
     functor_spec/3,
     functor_spec/4,
     (#=..)/2,
+    length_c/2,
     functor_spec_t/4,
     functor_spec_t/5,
     (#=..)/3,
@@ -22,13 +23,13 @@
 :- use_module(library(iso_ext)).
 :- use_module(library(format)).
 
-:- attribute functor_spec/3, functor_spec_constraint/1.
+:- attribute functor_spec/3, functor_spec_constraint/1, length_of/1, lengths/1.
 
 functor_spec(Var, Functor, Arity) :-
     functor_spec(Var, Functor, Arity, _).
 
 functor_spec(Var, Functor, Arity, Args) :-
-    enforce_constraints(Var, Functor, Arity, Args),
+    enforce_functor_constraints(Var, Functor, Arity, Args),
     (
         (   var(Var), nonvar(Functor), nonvar(Args)
         ;   nonvar(Var)
@@ -55,10 +56,10 @@ functor_spec(Var, Functor, Arity, Args) :-
         )
     ).
 
-enforce_constraints(Var, Functor, Arity, Args) :-
+enforce_functor_constraints(Var, Functor, Arity, Args) :-
     catch(
         catch(
-            enforce_constraints_(Var, Functor, Arity, Args),
+            enforce_functor_constraints_(Var, Functor, Arity, Args),
             error(type_error(_,_),_),
             false
         ),
@@ -66,7 +67,7 @@ enforce_constraints(Var, Functor, Arity, Args) :-
         false
     ).
 
-enforce_constraints_(Var, Functor, Arity, Args) :-
+enforce_functor_constraints_(Var, Functor, Arity, Args) :-
     (   nonvar(Functor) ->
         (   atom(Functor) ->
             true
@@ -96,6 +97,34 @@ enforce_constraints_(Var, Functor, Arity, Args) :-
         functor(Var, Functor, Arity)
     ;   true
     ).
+
+
+install_length_attributes(Ls, Len) :-
+    0 #=< #Len,
+    (   get_atts(Ls, lengths(Lens0)) ->
+        % Propagate clpz
+        maplist(Len+\L^(Len #= L), Lens0),
+        sort([Len|Lens0], Lens),
+        put_atts(Ls, lengths(Lens))
+    ;   put_atts(Ls, lengths([Len]))
+    ),
+    (   get_atts(Len, length_of(Lists0)) ->
+        sort([Ls|Lists0], Lists),
+        put_atts(Len, length_of(Lists))
+    ;   put_atts(Len, length_of([Ls]))
+    ).
+
+length_c(Ls, Len) :-
+    (   var(Ls), var(Len) ->
+        install_length_attributes(Ls, Len)
+    ;   length(Ls, Len)
+    ).
+
+lists_length(Ls, Len) :-
+    maplist(Len+\L^(length(L, Len)), Ls).
+
+list_lengths(L, Lens) :-
+    maplist(L+\Len^(length(L, Len)), Lens).
 
 #=..(Term, [Functor|Args]) :-
         functor_spec(Term, Functor, _, Args).
@@ -132,7 +161,7 @@ functor_match_t(F1, F2, T) :-
     ).
 
 verify_attributes(Var, Value, Goals) :-
-    (   get_atts(Var, +functor_spec(Functor, Arity, Args)) ->
+    (   get_atts(Var, functor_spec(Functor, Arity, Args)) ->
         (   var(Value) ->
             (   get_atts(Value, +functor_spec(Functor0, Arity0, Args0)) ->
                 Functor0 = Functor,
@@ -149,26 +178,49 @@ verify_attributes(Var, Value, Goals) :-
             \V^G^(
                 G = (
                     var(V) ->
-                    functor_spec:get_atts(V, +functor_spec(Functor, Arity, Args)),
-                    functor_spec:enforce_constraints(V, Functor, Arity, Args)
+                    functor_spec:get_atts(V, functor_spec(Functor, Arity, Args)),
+                    functor_spec:enforce_functor_constraints(V, Functor, Arity, Args)
                 ;   true
                 )
             ),
             Vars,
             Goals
         )
+    ;   get_atts(Var, lengths(Lens)) ->
+        (   var(Value) ->
+            Goals = []
+        ;   Goals = [list_lengths(Var, Lens)]
+        )
+    ;   get_atts(Var, length_of(Lists)) ->
+        (   var(Value) ->
+            Goals = []
+        ;   Goals = [lists_length(Lists, Var)]
+        )
     ;   Goals = []
     ).
 
+length_c_attribute_goals([], _) --> [].
+length_c_attribute_goals([Len|Lens], Var) -->
+    [functor_spec:length_c(Var, Len)],
+    length_c_attribute_goals(Lens, Var).
+
 attribute_goals(Var) --> 
-    {(  get_atts(Var, +functor_spec(Functor, Arity, ArgSpec)) ->
-        put_atts(Var, -functor_spec(_, _, _)),
-        Goals0 = [functor_spec:functor_spec(Var, Functor, Arity, ArgSpec)|Goals],
-        phrase(attribute_goals(Var), Goals)
-    ;   get_atts(Var, +functor_spec_constraint(_)) ->
-        put_atts(Var, -functor_spec_constraint(_)),
-        Goals0 = Goals,
-        phrase(attribute_goals(Var), Goals)
-    ;   Goals0 = []
-    )},
-    Goals0.
+    (   { get_atts(Var, functor_spec(Functor, Arity, ArgSpec)) } ->
+        { put_atts(Var, -functor_spec(_, _, _)) },
+        [functor_spec:functor_spec(Var, Functor, Arity, ArgSpec)],
+        attribute_goals(Var)
+    ;   { get_atts(Var, functor_spec_constraint(_)) } ->
+        { put_atts(Var, -functor_spec_constraint(_)) },
+        [],
+        attribute_goals(Var)
+    ;   { get_atts(Var, lengths(Lens)) } ->
+        { put_atts(Var, -lengths(_)) },
+        length_c_attribute_goals(Lens, Var),
+        attribute_goals(Var)
+    ;   { get_atts(Var, length_of(_)) } ->
+        { put_atts(Var, -length_of(_)) },
+        [],
+        attribute_goals(Var)
+    ;   []
+    ).
+
