@@ -8,6 +8,7 @@
     functor_c/4,
     (#=..)/2,
     length_c/2,
+    same_length_c/2,
     functor_c_t/4,
     functor_c_t/5,
     (#=..)/3,
@@ -119,6 +120,10 @@ length_c(Ls, Len) :-
         install_length_attributes(Ls, Len)
     ;   length(Ls, Len)
     ).
+
+same_length_c(A, B) :-
+    length_c(A, Len),
+    length_c(B, Len).
 
 lists_length(Ls, Len) :-
     maplist(Len+\L^(length(L, Len)), Ls).
