@@ -18,6 +18,7 @@
 :- use_module(library(atts)).
 :- use_module(library(lists)).
 :- use_module(library(reif)).
+:- use_module(library(clpz)).
 :- use_module(library(lambda)).
 :- use_module(library(debug)).
 :- use_module(library(dcgs)).
@@ -117,7 +118,18 @@ install_length_attributes(Ls, Len) :-
 
 length_c(Ls, Len) :-
     (   var(Ls), var(Len) ->
+        Ls \== Len, % Can't be a list and a number at the same time
         install_length_attributes(Ls, Len)
+    ;   nonvar(Ls), var(Len) ->
+        % Check if it's an partial list
+        '$skip_max_list'(Len0, _, Ls, LsTail),
+        (   var(LsTail) ->
+            #LenTail #= #Len - #Len0,
+            install_length_attributes(LsTail, LenTail)
+        ;   LsTail = [] ->
+            length(Ls, Len)
+        ;   false
+        )
     ;   length(Ls, Len)
     ).
 
