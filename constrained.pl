@@ -8,6 +8,8 @@
     functor_c/4,
     (#=..)/2,
     length_c/2,
+    integer_c/1,
+    list_c/1,
     same_length_c/2,
     functor_c_t/4,
     functor_c_t/5,
@@ -25,7 +27,12 @@
 :- use_module(library(iso_ext)).
 :- use_module(library(format)).
 
-:- attribute functor_spec/3, functor_spec_constraint/1, length_of/1, lengths/1.
+:- attribute 
+    functor_spec/3,
+    functor_spec_constraint/1,
+    length_of/1,
+    lengths/1,
+    type/1.
 
 functor_c(Var, Functor, Arity) :-
     functor_c(Var, Functor, Arity, _).
@@ -117,6 +124,8 @@ install_length_attributes(Ls, Len) :-
     ).
 
 length_c(Ls, Len) :-
+    list_c(Ls),
+    integer_c(Len),
     (   var(Ls), var(Len) ->
         Ls \== Len, % Can't be a list and a number at the same time
         install_length_attributes(Ls, Len)
@@ -136,6 +145,35 @@ length_c(Ls, Len) :-
 same_length_c(A, B) :-
     length_c(A, Len),
     length_c(B, Len).
+
+type_c(Int, integer) :-
+    (   var(Int) ->
+        (   get_atts(Int, type(Type)) ->
+            Type = integer
+        ;   put_atts(Int, type(integer)),
+            Int in inf..sup
+        )
+    ;   integer(Int)
+    ).
+
+type_c(Ls, list) :-
+    (   var(Ls) ->
+        var_list_c(Ls)
+    ;   '$skip_max_list'(_, _, Ls, LsTail),
+        (   var(LsTail) ->
+            var_list_c(LsTail)
+        ;   LsTail = []
+        )
+    ).
+
+var_list_c(Ls) :-
+    (   get_atts(Ls, type(Type)) ->
+        Type = list
+    ;   put_atts(Ls, type(list))
+    ).
+
+integer_c(Int) :- type_c(Int, integer).
+list_c(Ls) :- type_c(Ls, list).
 
 lists_length(Ls, Len) :-
     maplist(Len+\L^(length(L, Len)), Ls).
@@ -178,19 +216,25 @@ functor_match_t(F1, F2, T) :-
     ).
 
 verify_attributes(Var, Value, Goals) :-
+    % TODO: Verify more than one attribute at a time
     (   get_atts(Var, functor_spec(Functor, Arity, Args)) ->
         (   var(Value) ->
             (   get_atts(Value, functor_spec(Functor0, Arity0, Args0)) ->
-                Functor0 = Functor,
-                Arity0 = Arity,
-                Args0 = Args
+                Goals0 = [
+                    Functor0 = Functor,
+                    Arity0 = Arity,
+                    Args0 = Args
+                ]
             ;   put_atts(Value, functor_spec(Functor, Arity, Args))
             )
-        ;   Value =.. [Functor|Args],
-            length(Args, Arity)
-        ),
-        Goals = []
-    ;   get_atts(Var, functor_spec_constraint(Vars)) ->
+        ;   Goals0 = [(
+                Value =.. [Functor|Args],
+                length(Args, Arity)
+            )]
+        )
+    ;   Goals0 = []
+    ),
+    (   get_atts(Var, functor_spec_constraint(Vars)) ->
         maplist(
             \V^G^(
                 G = (
@@ -201,20 +245,30 @@ verify_attributes(Var, Value, Goals) :-
                 )
             ),
             Vars,
-            Goals
+            Goals1
         )
-    ;   get_atts(Var, lengths(Lens)) ->
+    ;   Goals1 = []
+    ),
+    (   get_atts(Var, lengths(Lens)) ->
         (   var(Value) ->
-            Goals = []
-        ;   Goals = [list_lengths(Var, Lens)]
+            Goals2 = []
+        ;   Goals2 = [list_lengths(Var, Lens)]
         )
-    ;   get_atts(Var, length_of(Lists)) ->
+    ;   Goals2 = []
+    ),
+    (   get_atts(Var, length_of(Lists)) ->
         (   var(Value) ->
-            Goals = []
-        ;   Goals = [lists_length(Lists, Var)]
+            Goals3 = []
+        ;   Goals3 = [lists_length(Lists, Var)]
         )
-    ;   Goals = []
-    ).
+    ;   Goals3 = []
+    ),
+    (   get_atts(Var, type(Type)) ->
+        type_c(Value, Type),
+        Goals4 = []
+    ;   Goals4 = []
+    ),
+    append([Goals0, Goals1, Goals2, Goals3, Goals4], Goals).
 
 length_c_attribute_goals([], _) --> [].
 length_c_attribute_goals([Len|Lens], Var) -->
@@ -237,6 +291,16 @@ attribute_goals(Var) -->
     ;   { get_atts(Var, length_of(_)) } ->
         { put_atts(Var, -length_of(_)) },
         [],
+        attribute_goals(Var)
+    ;   { get_atts(Var, type(Type)) } ->
+        { 
+            put_atts(Var, -type(_)),
+            (   Type = integer -> TypeGoals = [constrained:integer_c(Var)]
+            ;   Type = list -> TypeGoals = [constrained:list_c(Var)]
+            ;   TypeGoals = []
+            )
+        },
+        TypeGoals,
         attribute_goals(Var)
     ;   []
     ).
