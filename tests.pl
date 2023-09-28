@@ -309,6 +309,22 @@ test("length_c/2: multiple lists with same length, unify list",(
     assert_p(Ls1, "[A,B,C]")
 )).
 
+% https://github.com/bakaq/constrained.pl/issues/14
+test("length_c/2: type inconsistency",(
+    \+ length_c(A, A),
+
+    length_c(Ls, Len),
+    \+ Ls = Len
+)).
+
+% https://github.com/bakaq/constrained.pl/issues/14
+test("length_c/2: partial lists",(
+    Ls = [_|_],
+    length_c(Ls, N),
+    assert_p(Ls, "[A|B]"),
+    assert_p(N, "A")
+)).
+
 main :-
     findall(test(Name, Goal), test(Name, Goal), Tests),
     run_tests(Tests, Failed),
