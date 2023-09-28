@@ -130,6 +130,15 @@ test("functor_c/3: fail instead of emitting errors",(
 )).
 */
 
+test("functor_c/3: unify term with negative after",(
+    % https://github.com/bakaq/constrained.pl/issues/13
+    functor_c(T, F, N, A), T = -1,
+    T == -1,
+    F == -1,
+    N == 0,
+    A == []
+)).
+
 test("functor_c/4: general query",(
     functor_c(A, B, C, D),
     assert_p([A, B, C, D], "[A,B,C,D]")
@@ -245,6 +254,12 @@ test("(#=..)/2: use as (=..)/2",(
     assert_p([F, Args], "[a,[1,2]]"),
 
     a(1,2) #=.. [a, 1, 2]
+)).
+
+test("(#=..)/2: unify term with negative after",(
+    A #=.. B, A = -1,
+    A == -1,
+    B == [-1]
 )).
 
 test("length_c/2: basic functionality",(
