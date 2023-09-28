@@ -79,22 +79,39 @@ enforce_functor_constraints(Var, Functor, Arity, Args) :-
         false
     ).
 
-enforce_functor_constraints_(Var, Functor, Arity, _) :-
+enforce_functor_constraints_(Var, Functor, Arity, Args) :-
     (   nonvar(Functor) ->
         (   atom(Functor) ->
             true
-        ;   #Arity #= 0
+        ;   Arity = 0
         )
     ;   true
     ),
     (   (Var == Functor; Var == Arity) ->
-        #Arity #= 0
+        Arity = 0
     ;   true
     ),
+    (   Functor == Arity ->
+        % Functor has to be a number then, and a number is not an atom,
+        % so it has to have arity 0
+        Functor = 0
+    ;   true
+    ),
+    (   Functor == Arity ->
+        Functor = 0
+    ;   true
+    ),
+    /*
+    (   (nonvar(Arity); nonvar(Args)) ->
+        length(Args, Arity)
+    ;   true
+    ),
+    */
     (   nonvar(Functor), nonvar(Arity) ->
         functor(Var, Functor, Arity)
     ;   true
     ).
+
 
 install_length_attributes(Ls, Len) :-
     0 #=< #Len,

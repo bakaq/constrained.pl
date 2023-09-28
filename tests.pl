@@ -91,16 +91,16 @@ test("functor_c/3: unification with conflicting specs",(
 )).
 
 test("functor_c/3: non-atom functor",(
-    % https://github.com/bakaq/functor_c/issues/1
+    % https://github.com/bakaq/constrained.pl/issues/1
     functor_c(A, A, A),
     assert_p(A, "0"),
 
-    % https://github.com/bakaq/functor_c/issues/2
+    % https://github.com/bakaq/constrained.pl/issues/2
     functor_c(B, C, D),
     B = 1,
     assert_p([B,C,D], "[1,1,0]"),
 
-    % https://github.com/bakaq/functor_c/issues/3
+    % https://github.com/bakaq/constrained.pl/issues/3
     functor_c(E, 1, F),
     assert_p([E,F], "[1,0]"),
 
@@ -108,13 +108,14 @@ test("functor_c/3: non-atom functor",(
     functor_c(G, G, H),
     assert_p([G,H], "[A,0]"),
 
-    % https://github.com/bakaq/functor_c/issues/4
+    % https://github.com/bakaq/constrained.pl/issues/4
     functor_c(I, J, I),
     assert_p([I,J], "[0,0]")
 )).
 
+/* https://github.com/bakaq/constrained.pl/issues/5#issuecomment-1740115280
 test("functor_c/3: fail instead of emitting errors",(
-    % https://github.com/bakaq/functor_c/issues/5
+    % https://github.com/bakaq/constrained.pl/issues/5
     catch(
         \+ (functor_c(_, A, B), A = a, B = 1*1),
         _,
@@ -127,6 +128,7 @@ test("functor_c/3: fail instead of emitting errors",(
         false
     )
 )).
+*/
 
 test("functor_c/4: general query",(
     functor_c(A, B, C, D),
