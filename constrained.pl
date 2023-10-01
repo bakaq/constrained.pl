@@ -8,7 +8,9 @@
     functor_c/4,
     (#=..)/2,
     length_c/2,
+    atom_c/1,
     integer_c/1,
+    atomic_c/1,
     list_c/1,
     same_length_c/2,
     functor_c_t/4,
@@ -134,14 +136,52 @@ same_length_c(A, B) :-
     length_c(A, Len),
     length_c(B, Len).
 
+type_c(Atom, atom) :-
+    (   var(Atom) ->
+        (   get_atts(Atom, type(Type)) ->
+            (   Type = atom ->
+                true
+            ;   Type = atomic ->
+                put_atts(Atom, type(atom))
+            )
+        ;   put_atts(Atom, type(atom))
+        )
+    ;   atom(Atom)
+    ).
+
 type_c(Int, integer) :-
     (   var(Int) ->
         (   get_atts(Int, type(Type)) ->
-            Type = integer
+            (   Type = integer ->
+                true
+            ;   (Type = number; Type = atomic) ->
+                put_atts(Int, type(integer))
+            )
         ;   put_atts(Int, type(integer)),
             Int in inf..sup
         )
     ;   integer(Int)
+    ).
+
+type_c(Atomic, atomic) :-
+    (   var(Atomic) ->
+        (   get_atts(Atomic, type(Type)) ->
+            (   Type = atomic ->
+                true
+            ;   Type = atom ->
+                put_atts(Atomic, type(atom))
+            ;   Type = number ->
+                put_atts(Atomic, type(number))
+            ;   Type = integer ->
+                put_atts(Atomic, type(integer))
+            ;   Type = float ->
+                put_atts(Atomic, type(float))
+            ;   Type = list ->
+                Atomic = []
+            )
+        ;   put_atts(Atomic, type(atomic))
+        )
+    ;   atomic(Atomic)
     ).
 
 type_c(Ls, list) :-
@@ -156,11 +196,17 @@ type_c(Ls, list) :-
 
 var_list_c(Ls) :-
     (   get_atts(Ls, type(Type)) ->
-        Type = list
+        (   Type = list ->
+            true
+        ;   Type = atomic ->
+            Ls = []
+        )
     ;   put_atts(Ls, type(list))
     ).
 
+atom_c(Int) :- type_c(Int, atom).
 integer_c(Int) :- type_c(Int, integer).
+atomic_c(Int) :- type_c(Int, atomic).
 list_c(Ls) :- type_c(Ls, list).
 
 lists_length(Ls, Len) :-
@@ -283,7 +329,8 @@ attribute_goals(Var) -->
     ;   { get_atts(Var, type(Type)) } ->
         { 
             put_atts(Var, -type(_)),
-            (   Type = integer -> TypeGoals = [constrained:integer_c(Var)]
+            (   Type = atom -> TypeGoals = [constrained:atom_c(Var)]
+            ;   Type = integer -> TypeGoals = [constrained:integer_c(Var)]
             ;   Type = list -> TypeGoals = [constrained:list_c(Var)]
             ;   TypeGoals = []
             )

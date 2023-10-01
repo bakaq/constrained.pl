@@ -100,7 +100,9 @@ list_(Term, Depth) :-
 consistent_equivalent(functor, functor_c, 3).
 consistent_equivalent((=..), (#=..), 2).
 consistent_equivalent(length, length_c, 2).
+consistent_equivalent(atom, atom_c, 1).
 consistent_equivalent(integer, integer_c, 1).
+consistent_equivalent(atomic, atomic_c, 1).
 consistent_equivalent(list_si, list_c, 1).
 
 test_predicates(Predicates0) :-
