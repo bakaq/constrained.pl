@@ -215,7 +215,7 @@ type_c(Atomic, atomic) :-
                 ;   Type = number
                 ) ->
                 true
-            ;   Type = list ->
+            ;   (Type = list; Type = chars) ->
                 Atomic = []
             )
         ;   put_atts(Atomic, type(atomic))
@@ -255,7 +255,16 @@ type_c(Chars, chars) :-
 type_c(Compound, compound) :-
     (   var(Compound) ->
         (   get_atts(Compound, type(Type)) ->
-            Type = compound
+            (   Type = compound ->
+                true
+            ;   Type = list ->
+                put_atts(Tail, type(list)),
+                Compound = [_|Tail]
+            ;   Type = chars ->
+                put_atts(Head, type(character)),
+                put_atts(Tail, type(chars)),
+                Compound = [Head|Tail]
+            )
         ;   put_atts(Compound, type(compound)),
             #Arity #\= 0,
             functor_c(Compound, _, Arity, _)
@@ -278,6 +287,9 @@ var_list_c(Ls) :-
     (   get_atts(Ls, type(Type)) ->
         (   Type = list ->
             true
+        ;   Type = compound ->
+            put_atts(LsTail, type(list)),
+            Ls = [_|LsTail]
         ;   Type = atomic ->
             Ls = []
         )
@@ -290,6 +302,10 @@ var_chars_c(Chars) :-
             true
         ;   Type = list ->
             put_atts(Chars, type(chars))
+        ;   Type = compound ->
+            put_atts(A, type(character)),
+            put_atts(B, type(chars)),
+            Chars = [A|B]
         ;   Type = atomic ->
             Chars = []
         )
@@ -360,7 +376,7 @@ verify_attributes(Var, Value, Goals) :-
             )
         ;   Goals0 = [(
                 Value =.. [Functor|Args],
-                length(Args, Arity)
+                lists:length(Args, Arity)
             )]
         )
     ;   Goals0 = []

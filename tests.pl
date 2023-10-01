@@ -365,19 +365,47 @@ test("type constraints list_c/1 and atomic_c/1 to []",(
     B == []
 )).
 
+test("type constraints chars_c/1 and atomic_c/1 to []",(
+    chars_c(A),
+    atomic_c(A),
+    A == [],
+    
+    atomic_c(B),
+    chars_c(B),
+    B == []
+)).
+
+test("type constraints list_c/1 and compound_c/1 to [_|_]",(
+    list_c(A),
+    compound_c(A),
+    assert_p(A, "[A|B]"),
+    
+    compound_c(B),
+    list_c(B),
+    assert_p(B, "[A|B]")
+)).
+
+test("type constraints chars_c/1 and compound_c/1 to [_|_]",(
+    chars_c(A),
+    compound_c(A),
+    assert_p(A, "[A|B]"),
+    
+    compound_c(B),
+    chars_c(B),
+    assert_p(B, "[A|B]")
+)).
+
 test("type constraints compatibility",(
     maplist(atomic_c, [A, B, C]),
     maplist(number_c, [A, B]),
     integer_c(A),
     float_c(B),
     atom_c(C),
-    character_c(C)
+    character_c(C),
 
-    /* TODO
     compound_c(D),
     list_c(D),
     chars_c(D)
-    */
 )).
 
 test("type constraints incompatibility",(
