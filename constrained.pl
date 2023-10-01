@@ -15,6 +15,7 @@
     atomic_c/1,
     list_c/1,
     character_c/1,
+    chars_c/1,
     same_length_c/2,
     functor_c_t/4,
     functor_c_t/5,
@@ -241,6 +242,22 @@ type_c(Char, character) :-
     ;   character_si(Char)
     ).
 
+type_c(Chars, chars) :-
+    (   var(Chars) ->
+        var_chars_c(Chars)
+    ;   mark_chars(Chars)
+    ).
+
+mark_chars([]).
+mark_chars([C|Cs]) :-
+    character_c(C),
+    (   var(Cs) ->
+        var_chars_c(Cs)
+    ;   Cs = [] ->
+        true
+    ;   mark_chars(Cs)
+    ).
+
 var_list_c(Ls) :-
     (   get_atts(Ls, type(Type)) ->
         (   Type = list ->
@@ -251,6 +268,18 @@ var_list_c(Ls) :-
     ;   put_atts(Ls, type(list))
     ).
 
+var_chars_c(Chars) :-
+    (   get_atts(Chars, type(Type)) ->
+        (   Type = chars ->
+            true
+        ;   Type = list ->
+            put_atts(Chars, type(chars))
+        ;   Type = atomic ->
+            Chars = []
+        )
+    ;   put_atts(Chars, type(chars))
+    ).
+
 atom_c(Atom) :- type_c(Atom, atom).
 integer_c(Int) :- type_c(Int, integer).
 float_c(Float) :- type_c(Float, float).
@@ -258,6 +287,7 @@ number_c(Number) :- type_c(Number, number).
 atomic_c(Atomic) :- type_c(Atomic, atomic).
 list_c(Ls) :- type_c(Ls, list).
 character_c(Char) :- type_c(Char, character).
+chars_c(Chars) :- type_c(Chars, chars).
 
 lists_length(Ls, Len) :-
     maplist(Len+\L^(length(L, Len)), Ls).
@@ -386,6 +416,7 @@ attribute_goals(Var) -->
             ;   Type = atomic -> TypeGoals = [constrained:atomic_c(Var)]
             ;   Type = list -> TypeGoals = [constrained:list_c(Var)]
             ;   Type = character -> TypeGoals = [constrained:character_c(Var)]
+            ;   Type = chars -> TypeGoals = [constrained:chars_c(Var)]
             ;   TypeGoals = []
             )
         },
