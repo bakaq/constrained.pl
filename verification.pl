@@ -102,6 +102,8 @@ consistent_equivalent((=..), (#=..), 2).
 consistent_equivalent(length, length_c, 2).
 consistent_equivalent(atom, atom_c, 1).
 consistent_equivalent(integer, integer_c, 1).
+consistent_equivalent(float, float_c, 1).
+consistent_equivalent(number, number_c, 1).
 consistent_equivalent(atomic, atomic_c, 1).
 consistent_equivalent(list_si, list_c, 1).
 

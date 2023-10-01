@@ -10,6 +10,8 @@
     length_c/2,
     atom_c/1,
     integer_c/1,
+    float_c/1,
+    number_c/1,
     atomic_c/1,
     list_c/1,
     same_length_c/2,
@@ -163,6 +165,36 @@ type_c(Int, integer) :-
     ;   integer(Int)
     ).
 
+type_c(Float, float) :-
+    (   var(Float) ->
+        (   get_atts(Float, type(Type)) ->
+            (   Type = float ->
+                true
+            ;   (Type = number; Type = atomic) ->
+                put_atts(Float, type(float))
+            )
+        ;   put_atts(Float, type(float))
+        )
+    ;   float(Float)
+    ).
+
+type_c(Number, number) :-
+    (   var(Number) ->
+        (   get_atts(Number, type(Type)) ->
+            (   Type = number ->
+                true
+            ;   Type = atomic ->
+                put_atts(Number, type(number))
+            ;   Type = integer ->
+                put_atts(Number, type(integer))
+            ;   Type = float ->
+                put_atts(Number, type(float))
+            )
+        ;   put_atts(Number, type(number))
+        )
+    ;   number(Number)
+    ).
+
 type_c(Atomic, atomic) :-
     (   var(Atomic) ->
         (   get_atts(Atomic, type(Type)) ->
@@ -204,9 +236,11 @@ var_list_c(Ls) :-
     ;   put_atts(Ls, type(list))
     ).
 
-atom_c(Int) :- type_c(Int, atom).
+atom_c(Atom) :- type_c(Atom, atom).
 integer_c(Int) :- type_c(Int, integer).
-atomic_c(Int) :- type_c(Int, atomic).
+float_c(Float) :- type_c(Float, float).
+number_c(Number) :- type_c(Number, number).
+atomic_c(Atomic) :- type_c(Atomic, atomic).
 list_c(Ls) :- type_c(Ls, list).
 
 lists_length(Ls, Len) :-
