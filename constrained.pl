@@ -14,6 +14,7 @@
     number_c/1,
     atomic_c/1,
     list_c/1,
+    character_c/1,
     same_length_c/2,
     functor_c_t/4,
     functor_c_t/5,
@@ -26,10 +27,11 @@
 :- use_module(library(reif)).
 :- use_module(library(clpz)).
 :- use_module(library(lambda)).
-:- use_module(library(debug)).
 :- use_module(library(dcgs)).
+:- use_module(library(si)).
 :- use_module(library(iso_ext)).
 :- use_module(library(format)).
+:- use_module(library(debug)).
 
 :- attribute 
     functor_spec/3,
@@ -145,6 +147,8 @@ type_c(Atom, atom) :-
                 true
             ;   Type = atomic ->
                 put_atts(Atom, type(atom))
+            ;   Type = character ->
+                put_atts(Atom, type(character))
             )
         ;   put_atts(Atom, type(atom))
         )
@@ -157,7 +161,8 @@ type_c(Int, integer) :-
             (   Type = integer ->
                 true
             ;   (Type = number; Type = atomic) ->
-                put_atts(Int, type(integer))
+                put_atts(Int, type(integer)),
+                Int in inf..sup
             )
         ;   put_atts(Int, type(integer)),
             Int in inf..sup
@@ -181,14 +186,13 @@ type_c(Float, float) :-
 type_c(Number, number) :-
     (   var(Number) ->
         (   get_atts(Number, type(Type)) ->
-            (   Type = number ->
+            (   (   Type = number
+                ;   Type = integer
+                ;   Type = float
+                ) ->
                 true
             ;   Type = atomic ->
                 put_atts(Number, type(number))
-            ;   Type = integer ->
-                put_atts(Number, type(integer))
-            ;   Type = float ->
-                put_atts(Number, type(float))
             )
         ;   put_atts(Number, type(number))
         )
@@ -198,16 +202,14 @@ type_c(Number, number) :-
 type_c(Atomic, atomic) :-
     (   var(Atomic) ->
         (   get_atts(Atomic, type(Type)) ->
-            (   Type = atomic ->
+            (   (   Type = atomic
+                ;   Type = character
+                ;   Type = atom
+                ;   Type = integer
+                ;   Type = float
+                ;   Type = number
+                ) ->
                 true
-            ;   Type = atom ->
-                put_atts(Atomic, type(atom))
-            ;   Type = number ->
-                put_atts(Atomic, type(number))
-            ;   Type = integer ->
-                put_atts(Atomic, type(integer))
-            ;   Type = float ->
-                put_atts(Atomic, type(float))
             ;   Type = list ->
                 Atomic = []
             )
@@ -226,6 +228,19 @@ type_c(Ls, list) :-
         )
     ).
 
+type_c(Char, character) :-
+    (   var(Char) ->
+        (   get_atts(Char, type(Type)) ->
+            (   Type = character ->
+                true
+            ;   (Type = atom; Type = atomic) ->
+                put_atts(Char, type(character))
+            )
+        ;   put_atts(Char, type(character))
+        )
+    ;   character_si(Char)
+    ).
+
 var_list_c(Ls) :-
     (   get_atts(Ls, type(Type)) ->
         (   Type = list ->
@@ -242,6 +257,7 @@ float_c(Float) :- type_c(Float, float).
 number_c(Number) :- type_c(Number, number).
 atomic_c(Atomic) :- type_c(Atomic, atomic).
 list_c(Ls) :- type_c(Ls, list).
+character_c(Char) :- type_c(Char, character).
 
 lists_length(Ls, Len) :-
     maplist(Len+\L^(length(L, Len)), Ls).
@@ -365,7 +381,11 @@ attribute_goals(Var) -->
             put_atts(Var, -type(_)),
             (   Type = atom -> TypeGoals = [constrained:atom_c(Var)]
             ;   Type = integer -> TypeGoals = [constrained:integer_c(Var)]
+            ;   Type = float -> TypeGoals = [constrained:float_c(Var)]
+            ;   Type = number -> TypeGoals = [constrained:number_c(Var)]
+            ;   Type = atomic -> TypeGoals = [constrained:atomic_c(Var)]
             ;   Type = list -> TypeGoals = [constrained:list_c(Var)]
+            ;   Type = character -> TypeGoals = [constrained:character_c(Var)]
             ;   TypeGoals = []
             )
         },
