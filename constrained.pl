@@ -381,6 +381,8 @@ verify_attributes(Var, Value, Goals) :-
                     Arity0 = Arity,
                     Args0 = Args
                 ]
+            ;   get_atts(Value, type(T)), T \= compound ->
+                true
             ;   put_atts(Value, functor_spec(Functor, Arity, Args))
             )
         ;   Goals0 = [(
