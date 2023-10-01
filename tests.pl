@@ -342,6 +342,74 @@ test("length_c/2: partial lists",(
     assert_p(N, "A")
 )).
 
+test("type constraints non instantiated",(
+    atom_c(A),
+    integer_c(B),
+    float_c(C),
+    number_c(D),
+    atomic_c(E),
+    list_c(F),
+    character_c(G),
+    chars_c(H),
+    compound_c(I),
+    maplist(var, [A, B, C, D, E, F, G, H, I])
+)).
+
+test("type constraints list_c/1 and atomic_c/1 to []",(
+    list_c(A),
+    atomic_c(A),
+    A == [],
+    
+    atomic_c(B),
+    list_c(B),
+    B == []
+)).
+
+test("type constraints compatibility",(
+    maplist(atomic_c, [A, B, C]),
+    maplist(number_c, [A, B]),
+    integer_c(A),
+    float_c(B),
+    atom_c(C),
+    character_c(C)
+
+    /* TODO
+    compound_c(D),
+    list_c(D),
+    chars_c(D)
+    */
+)).
+
+test("type constraints incompatibility",(
+    compound_c(A),
+    \+ (
+        atomic_c(A)
+    ;   atom_c(A)
+    ;   number_c(A)
+    ;   integer_c(A)
+    ;   float_c(A)
+    ;   character_c(A)
+    ),
+
+    number_c(B),
+    \+ (
+        atom_c(B)
+    ;   character_c(B)
+    ;   list_c(B)
+    ;   chars_c(B)
+    ),
+
+    atom_c(C),
+    \+ (
+        number_c(C)
+    ;   integer_c(C)
+    ;   float_c(C)
+    ;   list_c(C)
+    ;   chars_c(C)
+    )
+)).
+
+
 main :-
     findall(test(Name, Goal), test(Name, Goal), Tests),
     run_tests(Tests, Failed),
