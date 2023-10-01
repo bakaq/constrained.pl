@@ -76,7 +76,8 @@ functor_c(Var, Functor, Arity, Args) :-
                 [Functor, Arity, Args]
             )
         )
-    ).
+    ),
+    functor_spec_term_type(Var).
 
 enforce_functor_constraints(Var, Functor, Arity, Args) :-
     catch(
@@ -104,8 +105,17 @@ enforce_functor_constraints_(Var, Functor, Arity, _) :-
     (   nonvar(Functor), nonvar(Arity) ->
         functor(Var, Functor, Arity)
     ;   true
-    ).
+    ),
+    functor_spec_term_type(Var).
 
+functor_spec_term_type(Var) :-
+    (   var(Var), get_atts(Var, functor_spec(Functor, Arity, _)), nonvar(Arity) ->
+        (   Arity = 0 ->
+            Var = Functor
+        ;   compound_c(Var)
+        )
+    ;   true
+    ).
 
 install_length_attributes(Ls, Len) :-
     0 #=< #Len,
@@ -363,7 +373,6 @@ functor_match_t(F1, F2, T) :-
     ).
 
 verify_attributes(Var, Value, Goals) :-
-    % TODO: Verify more than one attribute at a time
     (   get_atts(Var, functor_spec(Functor, Arity, Args)) ->
         (   var(Value) ->
             (   get_atts(Value, functor_spec(Functor0, Arity0, Args0)) ->
@@ -450,6 +459,7 @@ attribute_goals(Var) -->
             ;   Type = list -> TypeGoals = [constrained:list_c(Var)]
             ;   Type = character -> TypeGoals = [constrained:character_c(Var)]
             ;   Type = chars -> TypeGoals = [constrained:chars_c(Var)]
+            ;   Type = compound -> TypeGoals = [constrained:compound_c(Var)]
             ;   TypeGoals = []
             )
         },
