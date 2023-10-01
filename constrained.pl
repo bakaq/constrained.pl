@@ -46,7 +46,9 @@ functor_c(Var, Functor, Arity) :-
     functor_c(Var, Functor, Arity, _).
 
 functor_c(Var, Functor, Arity, Args) :-
-    Arity in 0..sup,
+    atomic_c(Functor),
+    integer_c(Arity),
+    0 #=< #Arity,
     list_c(Args),
     length_c(Args, Arity),
     enforce_functor_constraints(Var, Functor, Arity, Args),
@@ -103,6 +105,7 @@ enforce_functor_constraints_(Var, Functor, Arity, _) :-
         functor(Var, Functor, Arity)
     ;   true
     ).
+
 
 install_length_attributes(Ls, Len) :-
     0 #=< #Len,
@@ -254,10 +257,10 @@ type_c(Compound, compound) :-
         (   get_atts(Compound, type(Type)) ->
             Type = compound
         ;   put_atts(Compound, type(compound)),
-            functor_c(Compound, _, Arity, _),
-            #Arity #\= 0
+            #Arity #\= 0,
+            functor_c(Compound, _, Arity, _)
         )
-    ;   functor_c(Compound, _, Arity, _),
+    ;   functor(Compound, _, Arity),
         #Arity #\= 0
     ).
 
