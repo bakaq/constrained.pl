@@ -16,6 +16,7 @@
     list_c/1,
     character_c/1,
     chars_c/1,
+    compound_c/1,
     same_length_c/2,
     functor_c_t/4,
     functor_c_t/5,
@@ -248,6 +249,18 @@ type_c(Chars, chars) :-
     ;   mark_chars(Chars)
     ).
 
+type_c(Compound, compound) :-
+    (   var(Compound) ->
+        (   get_atts(Compound, type(Type)) ->
+            Type = compound
+        ;   put_atts(Compound, type(compound)),
+            functor_c(Compound, _, Arity, _),
+            #Arity #\= 0
+        )
+    ;   functor_c(Compound, _, Arity, _),
+        #Arity #\= 0
+    ).
+
 mark_chars([]).
 mark_chars([C|Cs]) :-
     character_c(C),
@@ -288,6 +301,7 @@ atomic_c(Atomic) :- type_c(Atomic, atomic).
 list_c(Ls) :- type_c(Ls, list).
 character_c(Char) :- type_c(Char, character).
 chars_c(Chars) :- type_c(Chars, chars).
+compound_c(Compound) :- type_c(Compound, compound).
 
 lists_length(Ls, Len) :-
     maplist(Len+\L^(length(L, Len)), Ls).

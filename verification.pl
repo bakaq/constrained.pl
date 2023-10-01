@@ -108,6 +108,7 @@ consistent_equivalent(atomic, atomic_c, 1).
 consistent_equivalent(list_si, list_c, 1).
 consistent_equivalent(character_si, character_c, 1).
 consistent_equivalent(chars_si, chars_c, 1).
+consistent_equivalent(compound, compound_c, 1).
 
 test_predicates(Predicates0) :-
     maplist(consistent_equivalent, Predicates0, PredicatesC0, Arities0),
