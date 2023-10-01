@@ -6,6 +6,7 @@
 :- use_module(library(clpz)).
 :- use_module(library(pairs)).
 :- use_module(library(charsio)).
+:- use_module(library(si)).
 
 :- use_module(constrained).
 
@@ -99,6 +100,8 @@ list_(Term, Depth) :-
 consistent_equivalent(functor, functor_c, 3).
 consistent_equivalent((=..), (#=..), 2).
 consistent_equivalent(length, length_c, 2).
+consistent_equivalent(integer, integer_c, 1).
+consistent_equivalent(list_si, list_c, 1).
 
 test_predicates(Predicates0) :-
     maplist(consistent_equivalent, Predicates0, PredicatesC0, Arities0),
