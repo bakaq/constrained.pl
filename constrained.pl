@@ -332,14 +332,23 @@ character_c(Char) :- type_c(Char, character).
 chars_c(Chars) :- type_c(Chars, chars).
 compound_c(Compound) :- type_c(Compound, compound).
 
-lists_length(Ls, Len) :-
-    maplist(Len+\L^(length(L, Len)), Ls).
+lists_length(Lss, Len) :-
+    maplist(Len+\Ls^(list_length(Ls, Len)), Lss).
 
-list_lengths(L, Lens) :-
-    maplist(L+\Len^(length(L, Len)), Lens).
+list_lengths(Ls, Lens) :-
+    maplist(Ls+\Len^(list_length(Ls, Len)), Lens).
+
+list_length(Ls, Len) :-
+    '$skip_max_list'(Skipped, _, Ls, LsTail),
+    (   LsTail == [] ->
+        length(Ls, Len)
+    ;   var(LsTail) ->
+        #Len1 #= #Len - #Skipped,
+        length_c(LsTail, Len1)
+    ).
 
 #=..(Term, [Functor|Args]) :-
-        functor_c(Term, Functor, _, Args).
+    functor_c(Term, Functor, _, Args).
 
 functor_c_t(Var, Functor, Arity, T) :-
     functor_c(Var, Functor0, Arity0),

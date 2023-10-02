@@ -342,6 +342,21 @@ test("length_c/2: partial lists",(
     assert_p(N, "A")
 )).
 
+/* I think this is impossible
+test("length_c/2: partially instantiate when lower bound known",(
+    length_c(Ls, N),
+    assert_p(Ls, "A"),
+    N #>= 2,
+    assert_p(Ls, "[A,B|C]")
+)).
+*/
+
+test("length_c/2: instantiate later with partial list",(
+    length_c(Ls, N),
+    Ls = [A|B],
+    assert_p(Ls, "[A|B]")
+)).
+
 test("type constraints non instantiated",(
     atom_c(A),
     integer_c(B),
