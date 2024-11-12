@@ -352,8 +352,8 @@ test("length_c/2: partially instantiate when lower bound known",(
 */
 
 test("length_c/2: instantiate later with partial list",(
-    length_c(Ls, N),
-    Ls = [A|B],
+    length_c(Ls, _N),
+    Ls = [_A|_B],
     assert_p(Ls, "[A|B]")
 )).
 
